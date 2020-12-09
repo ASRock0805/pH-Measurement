@@ -37,10 +37,43 @@ float vOut;                 // Output of the ADC
 float phValue;              // Value of pH
 
 /*--- Function Prototype ---*/
-float phCal(float );
-void phMeas(byte );
 void setup(void);
 void loop(void);
+float phCal(float );
+void phMeas(byte );
+
+/*--- Initialization ---*/
+void setup(void) {
+  Serial.begin(baudSpeed);  // Initializes serial port
+  pinMode(phPin, INPUT);    // Initializes potentiometer pin
+  startTime = millis();     // Initial start time
+
+  // pH Sensor Initialization
+  vOut = 0.0;
+  phValue = 0.0;
+}
+
+/*--- Measurement ---*/
+void loop(void) {
+  // Every second, calculate and print the measured value
+  currentTime = millis();                     // Get the current "time"
+
+  if ((currentTime - startTime) >= period) {  // Test whether the period has elapsed
+    // pH Sensor
+    phMeas(phPin);
+
+    /*--- Sensor prompt ---*/
+    Serial.print("Voltage: ");
+    Serial.println(vOut, 4);
+    Serial.print("pH: ");
+    Serial.println(phValue, 2);
+
+    /*--- System Return ---*/
+    startTime = currentTime;  // Save the start time of the current state
+  } else {
+    return;
+  }
+}
 
 /*--- Functions Definition ---*/
 // Implementation of pH Calculation
@@ -63,38 +96,5 @@ void phMeas(byte signalPin) {  // Read analog signals, and converts into digtal 
 
   if (isinf(phValue) || isnan(phValue)) {
     phValue = -1;
-  }
-}
-
-/*--- Initialization ---*/
-void setup(void) {
-  Serial.begin(baudSpeed);  // Initializes serial port
-  pinMode(phPin, INPUT);    // Initializes potentiometer pin
-  startTime = millis();     // Initial start time
-
-  // pH Sensor Initialization
-  vOut = 0.0;
-  phValue = 0.0;
-}
-
-/*--- Measurement ---*/
-void loop(void) {
-  // Every second, calculate and print the measured value
-  currentTime = millis();                     // Get the current "time"
-
-  if ((currentTime - startTime) >= period) {  // Test whether the period has elapsed
-    // pH Sensor
-    phMeas(phPin);
-  
-  	/*--- Sensor prompt ---*/
-  	Serial.print("Voltage: ");
-  	Serial.println(vOut, 4);
-  	Serial.print("pH: ");
-  	Serial.println(phValue, 2);
-
-    /*--- System Return ---*/
-    startTime = currentTime;  // Save the start time of the current state
-  } else {
-    return;
   }
 }
